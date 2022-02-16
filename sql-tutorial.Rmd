@@ -1,0 +1,170 @@
+---
+title: "Using SQL in R"
+output: pdf_document
+---
+
+## SQL in rstudio
+
+
+In this notebook, we're going to look at how to ask questions of the airbnb dataset using SQL. I'll provide some examples in the code blocks below, and then allow you to try out some queries.
+
+First we need to load some libraries:
+
+```{r}
+library(tidyverse)
+library(DBI)
+library(odbc)
+
+```
+
+
+We're going to use a database of airbnb data for Portland listings that is mounted on an external server. We can connect to it using the code below:
+
+```{r}
+con <- DBI::dbConnect(odbc::odbc(),
+                      Driver   = "MySQL",
+                      Server   = "www.watzekdi.net",
+                      UID      = "watzekdi_airbnb",
+                      PWD      = "coffeeMakers",
+                      Port     = 3306,
+                      Database = "watzekdi_airbnb",
+                      timeout  = 10)
+```
+
+
+Notice in the upper-right window under the connections tab, we can take a look at the database tables. If you click the arrow next to watzekdi_airbnb, you'll see the database tables listed. On the far right, click the table icon for listings. This will open up a tab in this window so we can see the columns. It's essential to know the structure of our tables...otherwise, it would be impossible to write SQL.
+
+### Basic SQL syntax
+
+Let's start by running some queries on the listings table. The basic syntax is:
+
+select COLUMNNAME(s) from TABLENAME where SOMECONDITION
+
+Let's say we're intested in all columns in listings under $50 ("*" designates all columns). Here's the SQL query:
+
+
+Also, notice this is an SQL code chunk, with the results saved to the R variable "cheapListings".
+```{sql connection=con, output.var="cheapListings"}
+
+
+select * from listings where price < 50;
+
+
+```
+
+
+Now we can switch to an R code chunk to view the output:
+```{r}
+
+cheapListings
+
+```
+
+
+Let's say I'm interested in the price of the listing that accommodates the greatest number of people. I can use "order by" to sort (and 'desc' for descending), and "limit" to return a specific number of records:
+
+```{sql connection=con, output.var="priceOfBiggest"}
+
+
+select price from listings order by accommodates desc limit 1;
+
+
+```
+
+```{r}
+
+priceOfBiggest
+
+```
+
+YOUR TURN:
+
+How many bedrooms does the listing with the most reviews have?
+
+write your query below:
+```{sql connection=con, output.var="brMostReviews" }
+
+```
+
+Print out the R varibale brMostReviews below
+
+```{r}
+
+```
+
+
+
+What is the most expensive listing with a rating less than 4.00?
+
+Construct your sql query
+```{sql connection=con, output.var="expensiveBad"}
+
+```
+
+Print the output of expensiveBad:
+
+```{r}
+
+```
+
+
+
+### Joining tables
+
+Writing queries that join tables together allow you to ask more interesting questions of your data. Let's say we're interested in listings in the Alameda neighborhood. We know the listings table has a 'neighborhoodId' column, which matches the neighborhood table's 'id' columns. We can run a query to join the two tables like this:
+
+```{sql connection=con, output.var="alamedaListings"}
+
+select listingUrl, price from listings
+join neighborhoods on listings.neighborhoodId=neighborhoods.id 
+where neighborhoods.neighborhood="Alameda";
+
+```
+
+```{r}
+alamedaListings
+
+```
+
+
+
+
+YOUR TURN:
+
+How many bathrooms does the most expensive listing in the Woodstock neighborhood have?
+
+Construct your SQL query
+```{sql connection=con, output.var="woodstockBathrooms"}
+
+
+
+```
+
+Print the output
+
+```{r}
+
+
+
+```
+
+
+What is the average price of a listing in Woodland Park?
+(Hint: construct the query below, and then use R code in the second chunk to compute the average.)
+
+Write the query
+```{sql connection=con, output.var="wpPrices"}
+
+
+
+```
+
+
+Determine the average
+```{r}
+
+
+
+```
+
+
