@@ -168,3 +168,50 @@ Determine the average
 ```
 
 
+
+Using the database to generate a bar plot.
+
+Say we wanted to create a bar plot showing the 5 most expensive airbnb neighbororhods in Portland, by average rental price. First, we can query the database to get a dataframe of all listing neighborhoods and prices:
+
+
+```{sql connection=con, output.var="prices"}
+
+select listings.price, neighborhoods.neighborhood from listings 
+join neighborhoods on neighborhoods.id=listings.neighborhoodId
+
+```
+
+
+Now we switch to R, and use group_by/summarize to group the data by neighborhood, and compute the average price:
+
+```{r}
+
+prices
+
+p<-prices %>% group_by(neighborhood) %>% summarize(priceAvg=mean(price))
+p
+
+# order by priceAvg, descending
+sortedp<-p[order(-p$priceAvg),]
+
+sortedp
+
+# get top 5
+top5<-sortedp[1:5,]
+top5
+
+
+```
+
+
+Finally, we can take that top5 data, and use ggplot to generate a bar plot:
+
+
+```{r}
+
+ggplot(data=top5, mapping=aes(x=neighborhood, y=priceAvg, fill=neighborhood))+
+  geom_bar(stat="identity")+
+  labs(x="neighborhood", y="Average Price", title="Top 5 most expensive airbnb neighborhoods in Portland")
+
+```
+
