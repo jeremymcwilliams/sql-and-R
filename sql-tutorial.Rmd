@@ -28,8 +28,11 @@ con <- DBI::dbConnect(odbc::odbc(),
                       PWD      = "coffeeMakers",
                       Port     = 3306,
                       Database = "watzekdi_airbnb",
-                      timeout  = 10)
+                      timeout  = 100)
 ```
+
+
+NOTE: this connection can be a little finnicky, so if you run into connection issues in the samples below, just re-run the code above.
 
 
 Notice in the upper-right window under the connections tab, we can take a look at the database tables. If you click the arrow next to watzekdi_airbnb, you'll see the database tables listed. On the far right, click the table icon for listings. This will open up a tab in this window so we can see the columns. It's essential to know the structure of our tables...otherwise, it would be impossible to write SQL.
@@ -71,6 +74,8 @@ select price from listings order by accommodates desc limit 1;
 
 ```
 
+
+Now use an R code chunk to see the results:
 ```{r}
 
 priceOfBiggest
@@ -84,11 +89,15 @@ How many bedrooms does the listing with the most reviews have?
 write your query below:
 ```{sql connection=con, output.var="brMostReviews" }
 
+
+
 ```
 
 Print out the R varibale brMostReviews below
 
 ```{r}
+
+
 
 ```
 
@@ -99,11 +108,15 @@ What is the most expensive listing with a rating less than 4.00?
 Construct your sql query
 ```{sql connection=con, output.var="expensiveBad"}
 
+
+
 ```
 
 Print the output of expensiveBad:
 
 ```{r}
+
+
 
 ```
 
@@ -149,7 +162,7 @@ Print the output
 ```
 
 
-What is the average price of a listing in Woodland Park?
+What is the average price of listings in Woodland Park?
 (Hint: construct the query below, and then use R code in the second chunk to compute the average.)
 
 Write the query
@@ -169,9 +182,9 @@ Determine the average
 
 
 
-Using the database to generate a bar plot.
+### Using the database to generate a bar plot.
 
-Say we wanted to create a bar plot showing the 5 most expensive airbnb neighbororhods in Portland, by average rental price. First, we can query the database to get a dataframe of all listing neighborhoods and prices:
+Say we wanted to create a bar plot showing the 5 most expensive airbnb neighborhoods in Portland, by average rental price. First, we can query the database to get a data frame of all listing neighborhoods and prices:
 
 
 ```{sql connection=con, output.var="prices"}
@@ -185,19 +198,23 @@ join neighborhoods on neighborhoods.id=listings.neighborhoodId
 Now we switch to R, and use group_by/summarize to group the data by neighborhood, and compute the average price:
 
 ```{r}
-
+# first review query results
 prices
 
+# now group_by/summarize to determine the 
 p<-prices %>% group_by(neighborhood) %>% summarize(priceAvg=mean(price))
 p
 
-# order by priceAvg, descending
+# order by priceAvg column, descending
 sortedp<-p[order(-p$priceAvg),]
 
+# see the results
 sortedp
 
 # get top 5
 top5<-sortedp[1:5,]
+
+#see the results
 top5
 
 
@@ -214,4 +231,30 @@ ggplot(data=top5, mapping=aes(x=neighborhood, y=priceAvg, fill=neighborhood))+
   labs(x="neighborhood", y="Average Price", title="Top 5 most expensive airbnb neighborhoods in Portland")
 
 ```
+
+
+
+YOUR TURN:
+
+Can you use the technique above to generate a bar plot showing the top 5 least expensive neighborhoods for airbnb rentals, by average price?
+
+```{sql connection=con, ouptut.var="myPrices"}
+
+
+
+```
+
+
+Write R code to process the results, and create the plot:
+
+
+```{r}
+
+
+
+
+
+
+```
+
 
